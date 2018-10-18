@@ -1,5 +1,7 @@
 <?php
+include_once("functions.php");
 class nyaUpload {
+    const TODIR = "E:/www/upload/";
     private $fileinfo = null;
     private $allarr = array();
     private $isarray = false;
@@ -14,8 +16,6 @@ class nyaUpload {
     }
     function fail() {
         header("HTTP/1.1 400 Bad Request");
-        // $failarr = array("status"=>-1);
-        // return json_encode(array($failarr));
         return null;
     }
     function getfileinfo($key,$fi) {
@@ -39,23 +39,27 @@ class nyaUpload {
             }
             else
             {
-                $extensionarr = explode(".", $this->getfileinfo("name",$fi));
+                $srcfilename = $this->getfileinfo("name",$fi);
+                $extensionarr = explode(".", $srcfilename);
                 $extension = end($extensionarr);
+                $uptime = time();
+                $filename = md5($uptime.mt_rand(0,2147483647)).'.'.$extension;
                 $jarr = array(
                     "status" => $this->getfileinfo("error",$fi),
-                    "name" => $this->getfileinfo("name",$fi),
+                    "srcname" => $srcfilename,
+                    "name" => $filename,
                     "ext" => $extension,
                     "mime" => $this->getfileinfo("type",$fi),
                     "size" => $this->getfileinfo("size",$fi),
                 );
-                if (file_exists("E:/www/upload/")) {
-                    if (file_exists("E:/www/upload/".$this->getfileinfo("name",$fi)))
+                if (file_exists(self::TODIR)) {
+                    if (file_exists(self::TODIR.$filename))
                     {
                         $jarr["status"] = -102;
                     }
                     else
                     {
-                        if (move_uploaded_file($this->getfileinfo("tmp_name",$fi), "E:/www/upload/".$this->getfileinfo("name",$fi))) {
+                        if (move_uploaded_file($this->getfileinfo("tmp_name",$fi), self::TODIR.$filename)) {
                             $jarr["status"] = 0;
                         } else {
                             $jarr["status"] = -101;
