@@ -1,7 +1,8 @@
 <?php
 include_once("functions.php");
+include_once("md6.php");
 class nyaUpload {
-    const TODIR = "E:/www/upload/";
+    const TODIR = "B:/UP/";
     private $fileinfo = null;
     private $allarr = array();
     private $isarray = false;
@@ -30,6 +31,7 @@ class nyaUpload {
         $filecount = 1;
         if ($this->isarray) $filecount = count($this->fileinfo["error"]);
         for ($fi=0; $fi < $filecount; $fi++) {
+            $jtimestart = microtime(true);
             $jarr = null;
             if ($this->getfileinfo("error",$fi) > 0)
             {
@@ -43,7 +45,11 @@ class nyaUpload {
                 $extensionarr = explode(".", $srcfilename);
                 $extension = end($extensionarr);
                 $uptime = time();
-                $filename = md5($uptime.mt_rand(0,2147483647)).'.'.$extension;
+                $fromaddress = $this->getfileinfo("tmp_name",$fi);
+                $md6 = new md6hash;
+                $filename = $md6->hex($uptime.mt_rand(-2147483648,2147483647)).'.'.$extension;
+                $md5 = md5_file($fromaddress);
+                $toaddress = self::TODIR.$filename;
                 $jarr = array(
                     "status" => $this->getfileinfo("error",$fi),
                     "srcname" => $srcfilename,
@@ -51,6 +57,8 @@ class nyaUpload {
                     "ext" => $extension,
                     "mime" => $this->getfileinfo("type",$fi),
                     "size" => $this->getfileinfo("size",$fi),
+                    "time" => $uptime,
+                    "md5" => $md5
                 );
                 if (file_exists(self::TODIR)) {
                     if (file_exists(self::TODIR.$filename))
@@ -59,7 +67,7 @@ class nyaUpload {
                     }
                     else
                     {
-                        if (move_uploaded_file($this->getfileinfo("tmp_name",$fi), self::TODIR.$filename)) {
+                        if (move_uploaded_file($fromaddress, $toaddress)) {
                             $jarr["status"] = 0;
                         } else {
                             $jarr["status"] = -101;
@@ -68,6 +76,9 @@ class nyaUpload {
                 } else {
                     $jarr["status"] = -100;
                 }
+                $jtimeend = microtime(true);
+                $jarr["memory"] = memory_get_usage();
+                $jarr["proctime"] = $jtimeend - $jtimestart;
             }
             array_push($this->allarr,$jarr);
         }
