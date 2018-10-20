@@ -1,24 +1,39 @@
 <?php
 include_once("functions.php");
 include_once("md6.php");
+include_once("security.php");
 class nyaUpload {
     const TODIR = "B:/UP/";
     private $fileinfo = null;
     private $allarr = array();
     private $isarray = false;
-
+    private $security = null;
+    /**
+     * @description: 为初始变量赋值，如果没有提交内容则返回错误
+     */
     function __construct() {
         if (isset($_FILES["file"])) {
             $this->fileinfo = $_FILES["file"];
             $this->isarray = is_array($this->fileinfo["error"]);
+            $this->security = new nyaUploadSecurity();
         } else {
             $this->fail();
         }
     }
+    /**
+     * @description: 返回的错误内容
+     * @return null
+     */
     function fail() {
         header("HTTP/1.1 400 Bad Request");
         return null;
     }
+    /**
+     * @description: 从文件信息数组中取出信息，区分单个或多个文件
+     * @param String key 要获取的信息 
+     * @param Int fi 数组中第几个文件 
+     * @return String 取出的信息内容
+     */
     function getfileinfo($key,$fi) {
         if ($this->isarray) {
             return $this->fileinfo[$key][$fi];
@@ -26,6 +41,9 @@ class nyaUpload {
             return $this->fileinfo[$key];
         }
     }
+    /**
+     * @description: 保存文件并返回相关信息
+     */
     function savefile() {
         if (!$this->fileinfo) return $this->fail();
         $filecount = 1;
@@ -43,6 +61,8 @@ class nyaUpload {
             {
                 $srcfilename = $this->getfileinfo("name",$fi);
                 $extensionarr = explode(".", $srcfilename);
+                $srcfilenamevfarr = $this->security->checkfilename($srcfilename);
+                $srcfilename = $srcfilenamevfarr[1];
                 $extension = end($extensionarr);
                 $uptime = time();
                 $fromaddress = $this->getfileinfo("tmp_name",$fi);
@@ -53,7 +73,7 @@ class nyaUpload {
                 $jarr = array(
                     "status" => $this->getfileinfo("error",$fi),
                     "srcname" => $srcfilename,
-                    "name" => $filename,
+                    "phyname" => $filename,
                     "ext" => $extension,
                     "mime" => $this->getfileinfo("type",$fi),
                     "size" => $this->getfileinfo("size",$fi),
@@ -69,6 +89,7 @@ class nyaUpload {
                     {
                         if (move_uploaded_file($fromaddress, $toaddress)) {
                             $jarr["status"] = 0;
+                            if ($srcfilenamevfarr[0]) $jarr["status"] = 101;
                         } else {
                             $jarr["status"] = -101;
                         }
