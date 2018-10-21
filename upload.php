@@ -2,12 +2,14 @@
 include_once("functions.php");
 include_once("md6.php");
 include_once("security.php");
+include_once("config.php");
 class nyaUpload {
-    const TODIR = "B:/UP/";
+    private $filebase = "";
     private $fileinfo = null;
     private $allarr = array();
     private $isarray = false;
     private $security = null;
+    private $config = null;
     /**
      * @description: 为初始变量赋值，如果没有提交内容则返回错误
      */
@@ -16,6 +18,8 @@ class nyaUpload {
             $this->fileinfo = $_FILES["file"];
             $this->isarray = is_array($this->fileinfo["error"]);
             $this->security = new nyaUploadSecurity();
+            $this->config = new nyaUploadConfig();
+            $this->filebase = $this->config->filebaseConfig["dir"];
         } else {
             $this->fail();
         }
@@ -40,6 +44,19 @@ class nyaUpload {
         } else {
             return $this->fileinfo[$key];
         }
+    }
+    function datedir() {
+        $nowdate = [date('Y'),date('m'),date('d')];
+        $dir = $this->filebase;
+        if (!is_dir($dir)) mkdir($dir);
+        $dir .= $nowdate[0].'/';
+        if (!is_dir($dir)) mkdir($dir);
+        $dir .= $nowdate[1].'/';
+        if (!is_dir($dir)) mkdir($dir);
+        $dir .= $nowdate[2].'/';
+        if (!is_dir($dir)) mkdir($dir);
+        $subdir = implode("/", $nowdate).'/';
+        return $subdir;
     }
     /**
      * @description: 保存文件并返回相关信息
@@ -69,19 +86,23 @@ class nyaUpload {
                 $md6 = new md6hash;
                 $filename = $md6->hex($uptime.mt_rand(-2147483648,2147483647)).'.'.$extension;
                 $md5 = md5_file($fromaddress);
-                $toaddress = self::TODIR.$filename;
+                $todir = $this->datedir();
+                $toaddress = $this->filebase.$todir.$filename;
+                $url = $this->config->filebaseConfig["url"].$todir.$filename;
                 $jarr = array(
                     "status" => $this->getfileinfo("error",$fi),
                     "srcname" => $srcfilename,
                     "phyname" => $filename,
                     "ext" => $extension,
+                    "dir" => $todir,
+                    "url" => $url,
                     "mime" => $this->getfileinfo("type",$fi),
                     "size" => $this->getfileinfo("size",$fi),
                     "time" => $uptime,
                     "md5" => $md5
                 );
-                if (file_exists(self::TODIR)) {
-                    if (file_exists(self::TODIR.$filename))
+                if (file_exists($this->filebase)) {
+                    if (file_exists($this->filebase.$filename))
                     {
                         $jarr["status"] = -102;
                     }
