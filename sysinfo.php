@@ -1,5 +1,5 @@
 <?php
-include_once("functions.php");
+include_once("src/nyad_functions.php");
 header('Content-type:application/json');
 echo json_encode(array(
     "status" => 0,
