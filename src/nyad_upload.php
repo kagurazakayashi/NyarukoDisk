@@ -6,6 +6,7 @@ class nyaUpload {
     private $isarray = false;
     private $security = null;
     private $config = null;
+    private $sqlconn = null;
     /**
      * @description: 为初始变量赋值，如果没有提交内容则返回错误
      */
@@ -13,8 +14,9 @@ class nyaUpload {
         if (isset($_FILES["file"])) {
             $this->fileinfo = $_FILES["file"];
             $this->isarray = is_array($this->fileinfo["error"]);
-            $this->security = new nyaUploadSecurity();
             $this->config = new nyaUploadConfig();
+            $this->security = new nyaUploadSecurity();
+            $this->sqlconn = new nyaUploadDB($this->config->databaseConfig);
             $this->filebase = $this->config->filebaseConfig["dir"];
         } else {
             $this->fail();
@@ -82,6 +84,7 @@ class nyaUpload {
                 $srcfilename = $srcfilenamevfarr[1];
                 $extension = end($extensionarr);
                 $uptime = time();
+                $uptimestr = date("Y-m-d H:i:s",$uptime);
                 $fromaddress = $this->getfileinfo("tmp_name",$fi);
                 $md6 = new md6hash;
                 $filename = $md6->hex($uptime.mt_rand(-2147483648,2147483647)).'.'.$extension;
@@ -98,7 +101,7 @@ class nyaUpload {
                     "url" => $url,
                     "mime" => $this->getfileinfo("type",$fi),
                     "size" => $this->getfileinfo("size",$fi),
-                    "time" => $uptime,
+                    "uptime" => $uptimestr,
                     "md5" => $md5
                 );
                 if (file_exists($this->filebase)) {
@@ -109,8 +112,14 @@ class nyaUpload {
                     else
                     {
                         if (move_uploaded_file($fromaddress, $toaddress)) {
-                            $jarr["status"] = 0;
-                            if ($srcfilenamevfarr[0]) $jarr["status"] = 101;
+                            $sqlr = $this->sqlconn->insertfile($srcfilename,$filename,$extension,$todir,$jarr["mime"],$jarr["size"],$uptimestr,$md5);
+                            if ($sqlr && !is_array($sqlr)) {
+                                $jarr["status"] = 200;
+                                $jarr["info"] = $sqlr;
+                            } else {
+                                $jarr["status"] = 0;
+                                if ($srcfilenamevfarr[0]) $jarr["status"] = 101;
+                            }
                         } else {
                             $jarr["status"] = -101;
                         }

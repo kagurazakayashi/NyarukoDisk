@@ -12,7 +12,7 @@ class nyaUploadSecurity {
         // 如果不是数字则加引号
         if (!is_numeric($newval))
         {
-            $newval = "'" . mysql_real_escape_string($newval) . "'";      
+            $newval = "'" . mysql_real_escape_string($newval) . "'";
         }
         $isok = strcasecmp($newval,$value) == 0 ? false : true;
         return [$isok,$newval];
