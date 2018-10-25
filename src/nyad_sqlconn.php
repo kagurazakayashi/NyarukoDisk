@@ -2,10 +2,12 @@
 class nyaUploadDB {
     private $conf = null;
     private $security = null;
+    private $sqltable = "";
 
     function __construct($sqlconf) {
         $this->conf = $sqlconf;
         $this->security = new nyaUploadSecurity();
+        $this->sqltable = "`".$this->conf["dbname"]."`.`".$this->conf["table"]."`";
     }
     /**
      * @description: 执行SQL语句
@@ -34,17 +36,38 @@ class nyaUploadDB {
         }
         $con->close();
     }
-
-    function insertfile($srcname,$phyname,$ext,$dir,$mime,$size,$uptime,$hash) {
-        $key = "`srcname`,`phyname`,`ext`,`dir`,`mime`,`size`,`uptime`,`hash`";
-        $valuearr = array($srcname,$phyname,$ext,$dir,$mime,$size,$uptime,$hash);
+    /**
+     * @description: 添加文件信息到数据库
+     * @param String 文件相关信息
+     * @return Array/String 数据库执行结果
+     */
+    function insertFile($fileid,$srcname,$phyname,$ext,$dir,$mime,$size,$uptime,$hash) {
+        $key = "`fileid`,`srcname`,`phyname`,`ext`,`dir`,`mime`,`size`,`uptime`,`hash`";
+        $valuearr = array($fileid,$srcname,$phyname,$ext,$dir,$mime,$size,$uptime,$hash);
         for ($vi=0; $vi < count($valuearr); $vi++) {
             $valuearr[$vi] = $this->security->checkfilename($valuearr[$vi])[1];
         }
         $value = implode("','", $valuearr);
-        $sql = "INSERT INTO `".$this->conf["dbname"]."`.`".$this->conf["table"]."` (".$key.") VALUES ('".$value."');";
+        $sql = "INSERT INTO ".$this->sqltable." (".$key.") VALUES ('".$value."');";
         return $this->nyadb($sql);
     }
-    
+    /**
+     * @description: 通过哈希查找文件
+     * @param String hash 哈希值
+     * @return Array 文件信息列表 
+     */
+    function getFileWithHash($hash) {
+        $sql = "SELECT * FROM ".$this->sqltable." WHERE `hash`='".$this->security->checkfilename($hash)."';";
+        return $this->nyadb($sql);
+    }
+    /**
+     * @description: 通过原文件名查找文件
+     * @param String hash 哈希值
+     * @return Array 文件信息列表 
+     */
+    function getFileWithSrcName($name) {
+        $sql = "SELECT * FROM ".$this->sqltable." WHERE `srcname`='".$this->security->checkfilename($name)."';";
+        return $this->nyadb($sql);
+    }
 }
 ?>

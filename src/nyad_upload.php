@@ -87,13 +87,15 @@ class nyaUpload {
                 $uptimestr = date("Y-m-d H:i:s",$uptime);
                 $fromaddress = $this->getfileinfo("tmp_name",$fi);
                 $md6 = new md6hash;
-                $filename = $md6->hex($uptime.mt_rand(-2147483648,2147483647)).'.'.$extension;
+                $fileid = $md6->hex($uptime.mt_rand(-2147483648,2147483647));
+                $filename = $fileid.'.'.$extension;
                 $md5 = md5_file($fromaddress);
                 $todir = $this->datedir();
                 $toaddress = $this->filebase.$todir.$filename;
                 $url = $this->config->filebaseConfig["url"].$todir.$filename;
                 $jarr = array(
                     "status" => $this->getfileinfo("error",$fi),
+                    "fileid" => $fileid,
                     "srcname" => $srcfilename,
                     "phyname" => $filename,
                     "ext" => $extension,
@@ -112,10 +114,10 @@ class nyaUpload {
                     else
                     {
                         if (move_uploaded_file($fromaddress, $toaddress)) {
-                            $sqlr = $this->sqlconn->insertfile($srcfilename,$filename,$extension,$todir,$jarr["mime"],$jarr["size"],$uptimestr,$md5);
+                            $sqlr = $this->sqlconn->insertFile($fileid,$srcfilename,$filename,$extension,$todir,$jarr["mime"],$jarr["size"],$uptimestr,$md5);
                             if ($sqlr && !is_array($sqlr)) {
                                 $jarr["status"] = 200;
-                                $jarr["info"] = $sqlr;
+                                $jarr["error"] = $sqlr;
                             } else {
                                 $jarr["status"] = 0;
                                 if ($srcfilenamevfarr[0]) $jarr["status"] = 101;
