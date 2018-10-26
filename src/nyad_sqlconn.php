@@ -22,12 +22,12 @@ class nyaUploadDB {
             if ($multi) {
                 $row = "";
                 if (!is_bool($result)) {
-                    $row = $result->fetch_all();
+                    $row = $result->fetch_all(MYSQLI_ASSOC);
                 }
             } else {
                 $row = "";
                 if (!is_bool($result)) {
-                    $row = $result->fetch_array();
+                    $row = $result->fetch_row();
                 }
             }
             return $row;
@@ -57,8 +57,8 @@ class nyaUploadDB {
      * @return Array 文件信息列表 
      */
     function getFileWithHash($hash) {
-        $sql = "SELECT * FROM ".$this->sqltable." WHERE `hash`='".$this->security->checkfilename($hash)."';";
-        return $this->nyadb($sql);
+        $sql = "SELECT * FROM ".$this->sqltable." WHERE `hash`='".$this->security->checkfilename($hash)[1]."';";
+        return $this->nyadb($sql,true);
     }
     /**
      * @description: 通过原文件名查找文件
@@ -67,7 +67,7 @@ class nyaUploadDB {
      */
     function getFileWithSrcName($name) {
         $sql = "SELECT * FROM ".$this->sqltable." WHERE `srcname`='".$this->security->checkfilename($name)."';";
-        return $this->nyadb($sql);
+        return $this->nyadb($sql,true);
     }
 }
 ?>

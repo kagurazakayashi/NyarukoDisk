@@ -19,6 +19,17 @@ class nyaUploadSecurity {
     }
 
     /**
+     * @description: 检查字符串是否为哈希值
+     * @param String value 原始字符串
+     * @return Bool 返回是否允许
+     */
+    function ishash($value,$count=32) {
+        $isok = preg_match("/[^a-z0-9]/i",$value) ? false : true;
+        if (strlen($value) != $count) $isok = false;
+        return $isok;
+    }
+
+    /**
      * @description 清除文件名中的非法字符，截断超长的文件名
      * @param String value 原始字符串
      * @return Array<Bool,String> [是否一致,修改后的值]

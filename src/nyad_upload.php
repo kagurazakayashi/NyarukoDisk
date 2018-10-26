@@ -24,7 +24,6 @@ class nyaUpload {
     }
     /**
      * @description: 返回的错误内容
-     * @return null
      */
     function fail() {
         header("HTTP/1.1 400 Bad Request");
@@ -59,6 +58,10 @@ class nyaUpload {
         if (!is_dir($dir)) mkdir($dir);
         $subdir = implode("/", $nowdate).'/';
         return $subdir;
+    }
+    //检查MD5是否重复，如果重复将物理文件名重新赋予，并不做移动操作
+    function chkmd5() {
+        
     }
     /**
      * @description: 保存文件并返回相关信息
@@ -129,8 +132,8 @@ class nyaUpload {
                 } else {
                     $jarr["status"] = -100;
                 }
-                $jtimeend = microtime(true);
                 $jarr["memory"] = memory_get_usage();
+                $jtimeend = microtime(true);
                 $jarr["proctime"] = $jtimeend - $jtimestart;
             }
             array_push($this->allarr,$jarr);
