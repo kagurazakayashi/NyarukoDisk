@@ -5,7 +5,7 @@ include_once("src/nyad_security.php");
 include_once("config.php");
 include_once("src/nyad_sqlconn.php");
 include_once("src/nyad_upload.php");
-header('Content-type:application/json');
+// header('Content-type:application/json');
 $nyaUpload = new nyaUpload;
 echo $nyaUpload->savefile();
 /*
