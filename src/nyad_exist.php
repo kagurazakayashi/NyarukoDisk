@@ -18,9 +18,8 @@ class nyaExist {
     /**
      * @description: 返回的错误内容
      */
-    function fail() {
-        header("HTTP/1.1 400 Bad Request");
-        return null;
+    function fail($errid=-1) {
+        if ($errid) return array(array("status"=>$errid));
     }
     /**
      * @description: 自动识别 get/post
@@ -45,7 +44,7 @@ class nyaExist {
         $mode = $this->getpost("mode");
         if ($mode == "hash") {
             $files = $this->hashexist(false);
-            echo json_encode($files);
+            return $files;
         } else if ($mode == "hash-all") {
             $files = $this->hashexist(true);
             $infoarr = array(
@@ -54,10 +53,10 @@ class nyaExist {
                 "proctime"=>(microtime(true) - $jtimestart),
                 "files"=>count($files)
             );
-            echo json_encode(array(
+            return array(
                 "info"=>$infoarr,
                 "files"=>$files
-            ));
+            );
         }
     }
     /**

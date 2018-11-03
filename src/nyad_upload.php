@@ -39,10 +39,8 @@ class nyaUpload {
      * @description: 返回的错误内容
      * @param String errid 要输出的状态码（留空则什么都不输出） 
      */
-    function fail($errid=null) {
-        header("HTTP/1.1 400 Bad Request");
-        if ($errid) echo json_encode(array(array("status"=>$errid)));
-        die;
+    function fail($errid=-1) {
+        if ($errid) return array(array("status"=>$errid));
     }
     /**
      * @description: 从文件信息数组中取出信息，区分单个或多个文件
@@ -52,7 +50,6 @@ class nyaUpload {
      */
     function getfileinfo($key,$fi=0,$iint=0,$idata) {
         $returndata = null;
-        // echo json_encode($this->postinfo);
         if ($this->postinfo) {
             switch ($key) {
                 case 'hash':
@@ -230,7 +227,7 @@ class nyaUpload {
             }
             array_push($this->allarr,$jarr);
         }
-        return json_encode($this->allarr);
+        return $this->allarr;
     }
 }
 ?>

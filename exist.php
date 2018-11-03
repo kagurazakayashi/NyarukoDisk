@@ -5,7 +5,7 @@ include_once("src/nyad_sqlconn.php");
 include_once("config.php");
 header('Content-type:application/json');
 $exists = new nyaExist();
-echo $exists->isexist();
+echo json_encode($exists->isexist());
 /*
 /exist.php?mode=hash&hash=c1dd19f919ac9767e939883f697ef267 返回值示例：
 {
