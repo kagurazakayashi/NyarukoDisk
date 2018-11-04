@@ -13,27 +13,23 @@ class nyaUpload {
      * @description: 为初始变量赋值，如果没有提交内容则返回错误
      */
     function __construct() {
-        // if (isset($_FILES["file"])) {
-            if (isset($_FILES["file"])) $this->fileinfo = $_FILES["file"];
-            if (isset($_FILES) && count($_FILES) > 0) {
-                $this->fileisarray = is_array($this->fileinfo["error"]);
-            }
-            if (isset($_POST) && count($_POST) >= 2) {
-                if (!isset($_POST["hash"]) || !isset($_POST["filename"])) return $this->fail(-103);
-                $this->postinfo = array(
-                    "hash"=>$_POST["hash"],
-                    "filename"=>$_POST["filename"],
-                    "isexists"=>$_POST["isexists"]
-                );
-                $this->postisarray = is_array($this->postinfo["filename"]);
-            }
-            $this->config = new nyaUploadConfig();
-            $this->security = new nyaUploadSecurity();
-            $this->sqlconn = new nyaUploadDB($this->config->databaseConfig);
-            $this->filebase = $this->config->filebaseConfig["dir"];
-        // } else {
-        //     $this->fail();
-        // }
+        if (isset($_FILES["file"])) $this->fileinfo = $_FILES["file"];
+        if (isset($_FILES) && count($_FILES) > 0) {
+            $this->fileisarray = is_array($this->fileinfo["error"]);
+        }
+        if (isset($_POST) && count($_POST) >= 2) {
+            if (!isset($_POST["hash"]) || !isset($_POST["filename"])) return $this->fail(-103);
+            $this->postinfo = array(
+                "hash"=>$_POST["hash"],
+                "filename"=>$_POST["filename"],
+                "isexists"=>$_POST["isexists"]
+            );
+            $this->postisarray = is_array($this->postinfo["filename"]);
+        }
+        $this->config = new nyaUploadConfig();
+        $this->security = new nyaUploadSecurity();
+        $this->sqlconn = new nyaUploadDB($this->config->databaseConfig);
+        $this->filebase = $this->config->filebaseConfig["dir"];
     }
     /**
      * @description: 返回的错误内容

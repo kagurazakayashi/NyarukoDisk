@@ -2,7 +2,7 @@
 include_once("src/nyad_exist.php");
 include_once("src/nyad_security.php");
 include_once("src/nyad_sqlconn.php");
-include_once("config.php");
+include_once("nyad_config.php");
 header('Content-type:application/json');
 $exists = new nyaExist();
 echo json_encode($exists->isexist());

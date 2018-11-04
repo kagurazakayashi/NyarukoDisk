@@ -41,7 +41,7 @@ class nyaExist {
         $jtimestart = microtime(true);
         
         $files = [];
-        $mode = $this->getpost("mode");
+        $mode = $this->getpost("upmode");
         if ($mode == "hash") {
             $files = $this->hashexist(false);
             return $files;
