@@ -12,14 +12,14 @@ class nyaExist {
             $this->security = new nyaUploadSecurity();
             $this->sqlconn = new nyaUploadDB($this->config->databaseConfig);
         } else {
-            $this->fail();
+            die($this->fail(-2));
         }
     }
     /**
      * @description: 返回的错误内容
      */
     function fail($errid=-1) {
-        if ($errid) return array(array("status"=>$errid));
+        return array(array("status"=>$errid));
     }
     /**
      * @description: 自动识别 get/post
@@ -73,8 +73,7 @@ class nyaExist {
             $nowhash = $hasharr[$hi];
             $nowhash = $this->security->checkfilename($nowhash)[1];
             if (!$this->security->ishash($nowhash)) {
-                $this->fail();
-                die();
+                die($this->fail(-3));
             }
             $files = $this->sqlconn->getFileWithHash($nowhash);
             if ($isall) {
@@ -82,6 +81,32 @@ class nyaExist {
             } else {
                 $isfile = count($files) > 0 ? true : false;
                 $allfiles[$nowhash] = $isfile;
+            }
+        }
+        return $allfiles;
+    }
+    /**
+     * @description: 根据 id 读取文件列表
+     * @param Bool isall 是否获取详细信息
+     * @return Array<String:Array> 文件详细信息
+     * @return Array<String:Bool> 文件是否存在
+     */
+    function fileidexist($isall) {
+        $fileidarr = $this->getpost("id");
+        if (!is_array($fileidarr)) $fileidarr = array($fileidarr);
+        $allfiles = array();
+        for ($hi=0; $hi < count($fileidarr); $hi++) {
+            $nowfileid = $fileidarr[$hi];
+            $nowfileid = $this->security->checkfilename($nowfileid)[1];
+            if (!$this->security->ishash($nowfileid,64)) {
+                die($this->fail(-4));
+            }
+            $files = $this->sqlconn->getFileWithId($nowfileid);
+            if ($isall) {
+                $allfiles[$nowfileid] = $files;
+            } else {
+                $isfile = count($files) > 0 ? true : false;
+                $allfiles[$nowfileid] = $isfile;
             }
         }
         return $allfiles;

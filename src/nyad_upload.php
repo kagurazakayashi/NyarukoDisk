@@ -36,7 +36,7 @@ class nyaUpload {
      * @param String errid 要输出的状态码（留空则什么都不输出） 
      */
     function fail($errid=-1) {
-        if ($errid) return array(array("status"=>$errid));
+        return array(array("status"=>$errid));
     }
     /**
      * @description: 从文件信息数组中取出信息，区分单个或多个文件

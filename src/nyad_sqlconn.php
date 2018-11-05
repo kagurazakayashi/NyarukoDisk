@@ -69,5 +69,14 @@ class nyaUploadDB {
         $sql = "SELECT * FROM ".$this->sqltable." WHERE `srcname`='".$this->security->checkfilename($name)."';";
         return $this->nyadb($sql,true);
     }
+    /**
+     * @description: 通过通过文件唯一识别码查找文件
+     * @param String fileid 文件唯一识别码（ID）
+     * @return Array 文件信息列表（正常情况下只有1个文件）
+     */
+    function getFileWithId($fileid) {
+        $sql = "SELECT * FROM ".$this->sqltable." WHERE `fileid`='".$this->security->checkfilename($name)."';";
+        return $this->nyadb($sql,true);
+    }
 }
 ?>
