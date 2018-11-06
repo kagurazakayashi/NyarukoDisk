@@ -6,6 +6,7 @@ include_once("nyad_config.php");
 header('Content-type:application/json');
 $exists = new nyaExist();
 echo json_encode($exists->isexist());
+
 /*
 /exist.php?mode=hash&hash=c1dd19f919ac9767e939883f697ef267 返回值示例：
 {
@@ -48,6 +49,18 @@ echo json_encode($exists->isexist());
             }
         ]
     }
+}
+*/
+
+/*
+/exist.php?upmode=id-dl&id=c427ce51bc23836c18b6305c6a1823659fe291a9f553309f280133000a3884a7 返回值示例：
+{
+    "c427ce51bc23836c18b6305c6a1823659fe291a9f553309f280133000a3884a7": [
+        {
+            "srcname": "00001113.jpg",
+            "url": "http://192.168.2.100/upload/2019/01/15/0dfd5c8aad512b27a7702c750d87b47f2d9867f52429623743ff8333b66d5278.jpg"
+        }
+    ]
 }
 */
 ?>

@@ -66,7 +66,7 @@ class nyaUploadDB {
      * @return Array 文件信息列表 
      */
     function getFileWithSrcName($name) {
-        $sql = "SELECT * FROM ".$this->sqltable." WHERE `srcname`='".$this->security->checkfilename($name)."';";
+        $sql = "SELECT * FROM ".$this->sqltable." WHERE `srcname`='".$this->security->checkfilename($name)[1]."';";
         return $this->nyadb($sql,true);
     }
     /**
@@ -75,7 +75,7 @@ class nyaUploadDB {
      * @return Array 文件信息列表（正常情况下只有1个文件）
      */
     function getFileWithId($fileid) {
-        $sql = "SELECT * FROM ".$this->sqltable." WHERE `fileid`='".$this->security->checkfilename($name)."';";
+        $sql = "SELECT * FROM ".$this->sqltable." WHERE `fileid`='".$this->security->checkfilename($fileid)[1]."';";
         return $this->nyadb($sql,true);
     }
 }

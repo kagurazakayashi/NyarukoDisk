@@ -18,7 +18,7 @@ class nyaUpload {
             $this->fileisarray = is_array($this->fileinfo["error"]);
         }
         if (isset($_POST) && count($_POST) >= 2) {
-            if (!isset($_POST["hash"]) || !isset($_POST["filename"])) return $this->fail(-103);
+            if (!isset($_POST["hash"]) || !isset($_POST["filename"])) die($this->fail(-103));
             $this->postinfo = array(
                 "hash"=>$_POST["hash"],
                 "filename"=>$_POST["filename"],
@@ -36,7 +36,8 @@ class nyaUpload {
      * @param String errid 要输出的状态码（留空则什么都不输出） 
      */
     function fail($errid=-1) {
-        return array(array("status"=>$errid));
+        header("HTTP/1.1 400 Bad Request");
+        return json_encode(array(array("status"=>$errid)));
     }
     /**
      * @description: 从文件信息数组中取出信息，区分单个或多个文件
@@ -113,7 +114,7 @@ class nyaUpload {
      * @description: 保存文件并返回相关信息
      */
     function savefile() {
-        if (!$this->fileinfo && !$this->postinfo) return $this->fail();
+        if (!$this->fileinfo && !$this->postinfo) die($this->fail());
         $this->optionalupload();
         $filecount = 1;
         if ($this->fileisarray) $filecount = count($this->fileinfo["error"]);

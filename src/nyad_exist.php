@@ -7,19 +7,20 @@ class nyaExist {
      * @description: 为初始变量赋值，如果没有提交内容则返回错误
      */
     function __construct() {
-        if ($this->getpost("mode")) {
+        // if ($this->getpost("upmode")) {
             $this->config = new nyaUploadConfig();
             $this->security = new nyaUploadSecurity();
             $this->sqlconn = new nyaUploadDB($this->config->databaseConfig);
-        } else {
-            die($this->fail(-2));
-        }
+        // } else {
+        //     die($this->fail(-2));
+        // }
     }
     /**
      * @description: 返回的错误内容
      */
     function fail($errid=-1) {
-        return array(array("status"=>$errid));
+        header("HTTP/1.1 400 Bad Request");
+        return json_encode(array(array("status"=>$errid)));
     }
     /**
      * @description: 自动识别 get/post
@@ -42,21 +43,43 @@ class nyaExist {
         
         $files = [];
         $mode = $this->getpost("upmode");
-        if ($mode == "hash") {
-            $files = $this->hashexist(false);
-            return $files;
-        } else if ($mode == "hash-all") {
-            $files = $this->hashexist(true);
-            $infoarr = array(
-                "status"=>0,
-                "memory"=>memory_get_usage(),
-                "proctime"=>(microtime(true) - $jtimestart),
-                "files"=>count($files)
-            );
-            return array(
-                "info"=>$infoarr,
-                "files"=>$files
-            );
+        switch ($mode) {
+            case "hash":
+                $files = $this->hashexist(false);
+                return $files;
+            case "hash-all":
+                $files = $this->hashexist(true);
+                $infoarr = array(
+                    "status"=>0,
+                    "memory"=>memory_get_usage(),
+                    "proctime"=>(microtime(true) - $jtimestart),
+                    "files"=>count($files)
+                );
+                return array(
+                    "info"=>$infoarr,
+                    "files"=>$files
+                );
+            case "id":
+                $files = $this->fileidexist(1);
+                return $files;
+            case "id-all":
+                $files = $this->fileidexist(0);
+                $infoarr = array(
+                    "status"=>0,
+                    "memory"=>memory_get_usage(),
+                    "proctime"=>(microtime(true) - $jtimestart),
+                    "files"=>count($files)
+                );
+                return array(
+                    "info"=>$infoarr,
+                    "files"=>$files
+                );
+            case "id-dl":
+                $files = $this->fileidexist(2);
+                return $files;
+            default:
+                die($this->fail(-2));
+                break;
         }
     }
     /**
@@ -87,12 +110,13 @@ class nyaExist {
     }
     /**
      * @description: 根据 id 读取文件列表
-     * @param Bool isall 是否获取详细信息
+     * @param Int showmode 回显模式 0显示所有信息 1只返回是否有 2只返回下载地址
+     * @param String fileid 文件唯一识别码
      * @return Array<String:Array> 文件详细信息
      * @return Array<String:Bool> 文件是否存在
      */
-    function fileidexist($isall) {
-        $fileidarr = $this->getpost("id");
+    function fileidexist($showmode,$fileid=null,$arrayout=false) {
+        $fileidarr = $fileid ? $fileid : $this->getpost("id");
         if (!is_array($fileidarr)) $fileidarr = array($fileidarr);
         $allfiles = array();
         for ($hi=0; $hi < count($fileidarr); $hi++) {
@@ -102,11 +126,28 @@ class nyaExist {
                 die($this->fail(-4));
             }
             $files = $this->sqlconn->getFileWithId($nowfileid);
-            if ($isall) {
+            if ($showmode == 0) {
                 $allfiles[$nowfileid] = $files;
-            } else {
+            } else if ($showmode == 1) {
                 $isfile = count($files) > 0 ? true : false;
                 $allfiles[$nowfileid] = $isfile;
+            } else if ($showmode == 2) {
+                //重建二维数组
+                $newfiles = array();
+                for ($filei=0; $filei < count($files); $filei++) { 
+                    $nowfile = $files[$filei];
+                    $dlurl = $this->config->filebaseConfig["url"].$nowfile["dir"]."/".$nowfile["phyname"].".".$nowfile["ext"];
+                    if ($arrayout) {
+                        $newfile = array($nowfile["srcname"],$dlurl);
+                    } else {
+                        $newfile = array(
+                            "srcname"=>$nowfile["srcname"],
+                            "url"=>$dlurl
+                        );
+                    }
+                    array_push($newfiles,$newfile);
+                }
+                $allfiles[$nowfileid] = $newfiles;
             }
         }
         return $allfiles;
